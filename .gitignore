@@ -5,3 +5,4 @@ db/
 docs/
 /LangChain/
 log.txt
+__pycache__/
