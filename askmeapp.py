@@ -11,7 +11,7 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_chroma import Chroma
 
-from tkinter import *
+from tkinter import Tk, Text, Scrollbar, END, WORD
 from tkinter import ttk
 
 from dotenv import load_dotenv
@@ -23,7 +23,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 # Define language model name and initialize
 llm_name = "gpt-3.5-turbo-0125"
 llm = ChatOpenAI(model_name=llm_name, temperature=0)
-greeting = llm.invoke("Hi!")
+# greeting = llm.invoke("Hi!")
 
 # Define key variables
 persist_directory = 'db'
@@ -98,39 +98,35 @@ else:
 # Setup Tkinter GUI
 root = Tk()
 root.title('Ask Me')
-style = ttk.Style()
-style.configure('TButton', font=('Helvetica', 12), background='#4CAF50', foreground='white')
-style.configure('TLabel', font=('Helvetica', 12), background='white', foreground='#333')
 
 def retrieve_input():
-    inputValue = textBox.get("1.0","end-1c")
+    inputValue = textBox.get("1.0", END).strip()
     cb.convchain(query=inputValue)
     textBox.delete("1.0", END)
-    Output.insert(END, f"You: {inputValue}\n", 'user')
-    Output.insert(END, f"Bot: {cb.answer}\n", 'bot')
+    Output.insert(END, f"YOU:  {inputValue}\n\n", 'user')
+    Output.insert(END, f"AI-BOT:  {cb.answer}\n\n", 'bot')
     rOutput.insert(END, f"Question: {inputValue} --> {cb.db_query}\n", 'query')
     for doc in cb.db_response:
         rOutput.insert(END, f"File: {doc.metadata['source']}\nPage: {doc.metadata['page']}\n", 'source')
-        rOutput.insert(END, f"{doc.page_content[0:500]}.......\n", 'content')
+        rOutput.insert(END, f"{doc.page_content[:500]}.......\n", 'content')
 
 # Setup Tkinter GUI elements
-textBox = Text(root, height=5, width=65, foreground='black', background='white', font=('Helvetica', 12), wrap=WORD)
+textBox = Text(root, height=5, width=65, font=('Helvetica', 12), wrap=WORD)
 textBox.grid(row=1, column=0, padx=10, pady=10)
 
-buttonCommit = ttk.Button(root, text="Ask", command=retrieve_input)
+buttonCommit = ttk.Button(root, text="Chat", command=retrieve_input)
 buttonCommit.grid(row=1, column=1, padx=10, pady=10)
 
 scrollbar = Scrollbar(root)
-Output = Text(root, height=20, width=65, foreground='black', background='white',wrap=WORD, yscrollcommand=scrollbar.set, font=('Helvetica', 12))
+Output = Text(root, height=20, width=65, wrap=WORD, yscrollcommand=scrollbar.set, font=('Helvetica', 12))
 Output.grid(row=0, column=0, padx=10, pady=10)
 Output.tag_configure('user', foreground='#3333FF')
 Output.tag_configure('bot', foreground='#FF5733')
 scrollbar.grid(row=0, column=1, sticky='ns')
 scrollbar.config(command=Output.yview)
-Output.insert(END, f"{greeting}\n", 'bot')
 
 rscrollbar = Scrollbar(root)
-rOutput = Text(root, height=12, width=65, foreground='black', background='#f0f0f0', wrap=WORD, yscrollcommand=rscrollbar.set, font=('Helvetica', 12))
+rOutput = Text(root, height=12, width=65, wrap=WORD, yscrollcommand=rscrollbar.set, font=('Helvetica', 12))
 rOutput.grid(row=0, column=2, padx=10, pady=10, sticky='ns')
 rOutput.tag_configure('query', foreground='#3333FF')
 rOutput.tag_configure('source', foreground='#FF5733')
@@ -138,5 +134,5 @@ rscrollbar.grid(row=0, column=3, sticky='ns')
 rscrollbar.config(command=rOutput.yview)
 
 # Run Tkinter event loop
-root.configure(bg='white')
-mainloop()
+root.mainloop()
+
