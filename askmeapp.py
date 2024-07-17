@@ -18,6 +18,11 @@ from langchain_chroma import Chroma
 from tkinter import *
 from tkinter import ttk
 
+from dotenv import load_dotenv
+
+load_dotenv()
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+
 # Define language model name and initialize
 llm_name = "gpt-3.5-turbo-0125"
 llm = ChatOpenAI(model_name=llm_name, temperature=0)
@@ -125,7 +130,7 @@ Output.tag_configure('user', foreground='#3333FF')
 Output.tag_configure('bot', foreground='#FF5733')
 scrollbar.grid(row=0, column=1, sticky='ns')
 scrollbar.config(command=Output.yview)
-Output.insert(END, f"{greeting.content}\n", 'bot')
+Output.insert(END, f"{greeting}\n", 'bot')
 
 rscrollbar = Scrollbar(root)
 rOutput = Text(root, height=12, width=65, foreground='black', background='#f0f0f0', wrap=WORD, yscrollcommand=rscrollbar.set, font=('Helvetica', 12))
