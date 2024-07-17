@@ -1,12 +1,8 @@
 import os
 import openai
-import sys
-sys.path.append('../..')
 import param
 
 from langchain_openai import OpenAIEmbeddings
-from langchain.text_splitter import CharacterTextSplitter, RecursiveCharacterTextSplitter
-from langchain.document_loaders import TextLoader
 from langchain.chains import RetrievalQA, ConversationalRetrievalChain
 from langchain.memory import ConversationBufferMemory
 from langchain_openai import ChatOpenAI
@@ -19,6 +15,7 @@ from tkinter import *
 from tkinter import ttk
 
 from dotenv import load_dotenv
+from langchain_text_splitters import CharacterTextSplitter, RecursiveCharacterTextSplitter
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -26,7 +23,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 # Define language model name and initialize
 llm_name = "gpt-3.5-turbo-0125"
 llm = ChatOpenAI(model_name=llm_name, temperature=0)
-greeting = llm.invoke("Hello world!")
+greeting = llm.invoke("Hi!")
 
 # Define key variables
 persist_directory = 'db'
