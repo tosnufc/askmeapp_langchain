@@ -1,10 +1,8 @@
 import os
-import openai
 import param
 
 from langchain_openai import OpenAIEmbeddings
-from langchain.chains import RetrievalQA, ConversationalRetrievalChain
-from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
 from langchain_openai import ChatOpenAI
 from langchain_community.document_loaders import TextLoader
 from langchain_community.document_loaders import PyPDFLoader
@@ -15,7 +13,7 @@ from tkinter import Tk, Text, Scrollbar, END, WORD
 from tkinter import ttk
 
 from dotenv import load_dotenv
-from langchain_text_splitters import CharacterTextSplitter, RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -36,6 +34,7 @@ db_flag  = 1   # 0: embed documents and save to vector database, 1: use existing
 def load_db(file, chain_type, k):
     loader = PyPDFDirectoryLoader(file)
     documents = loader.load()
+    print(documents)
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=Chunk_size, chunk_overlap=Chunk_overlap)
     docs = text_splitter.split_documents(documents)
     embeddings = OpenAIEmbeddings()
