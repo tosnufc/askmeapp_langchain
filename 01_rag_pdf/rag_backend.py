@@ -1,55 +1,69 @@
+from dotenv import load_dotenv
 import os
-
-from langchain_openai import OpenAIEmbeddings
-from langchain.chains import ConversationalRetrievalChain
-from langchain_openai import ChatOpenAI
 from langchain_community.document_loaders import PyPDFDirectoryLoader
-from langchain_chroma import Chroma
-import warnings
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+from langchain_openai import ChatOpenAI
+from langchain.chains import ConversationalRetrievalChain
 
 from tkinter import Tk, Text, Scrollbar, END, WORD
 from tkinter import ttk
 
-from dotenv import load_dotenv
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-# Define language model name and initialize
-llm_name = "gpt-3.5-turbo-0125"
-llm = ChatOpenAI(model_name=llm_name, temperature=0)
-
-# Define key variables
-docs = './01_rag_pdf/docs'
-persist_directory = './01_rag_pdf/db'
+# define variables for embeded
+pdf_dir = './01_rag_pdf/docs'
+persist_dir = './01_rag_pdf/db'
 chunk_size = 1000
 chunk_overlap = 150
-K = 2
+
+# define additional variables for get_standalone_question
+llm_model = 'gpt-4o'
+temperature = 0
 chain_type = 'stuff'
+k = 2
 
-def embed(dir):
-    loader = PyPDFDirectoryLoader(dir)
-    documents = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    docs = text_splitter.split_documents(documents)
-    Chroma.from_documents(documents=docs, embedding=OpenAIEmbeddings(), persist_directory=persist_directory)
 
-embed(dir=docs)
+def embed(data_source):
+    ''' ingest pdf documents in a given folder into a vector store'''
+    # load documents
+    loader = PyPDFDirectoryLoader(pdf_dir)
+    pre_split_documents = loader.load()
+
+    # split into chunks
+    splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size,
+                                              chunk_overlap=chunk_overlap)
+    post_split_documents = splitter.split_documents(pre_split_documents)
+
+    # embed the chunks into vector store
+    embeddings = OpenAIEmbeddings()
+    Chroma.from_documents(documents=post_split_documents,
+                                embedding=embeddings,
+                                persist_directory=persist_dir)
+
+# embed(dir=pdf_dir)
 
 def get_standalone_question():
-    exdb = Chroma(persist_directory=persist_directory, embedding_function=OpenAIEmbeddings())
-    exretriever = exdb.as_retriever(search_type="similarity", search_kwargs={"k": K})
-    qa = ConversationalRetrievalChain.from_llm(
-        llm=ChatOpenAI(model_name=llm_name, temperature=0),
+    '''retrieve from the vector store with user's query to create a standalone question'''
+    vector_store = Chroma(persist_directory=persist_dir, embedding_function=OpenAIEmbeddings())
+    llm = ChatOpenAI(model=llm_model, 
+                     temperature=temperature)
+    retriever = vector_store.as_retriever(search_type='similarity',
+                                          search_kwargs={'k':k})
+    retriever_chain = ConversationalRetrievalChain.from_llm(
+        llm=llm,
+        retriever=retriever,
         chain_type=chain_type,
-        retriever=exretriever,
         return_source_documents=True,
         return_generated_question=True,
-        verbose=False
+        verbose=True
     )
-    return qa
+    return retriever_chain
 
 chat_history = []
 answer = ""
