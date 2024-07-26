@@ -6,10 +6,6 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_openai import ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
-
-from tkinter import Tk, Text, Scrollbar, END, WORD
-from tkinter import ttk
-
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -81,62 +77,79 @@ def get_ai_response(qa, query):
 
 qa = get_standalone_question()
 
-loop = True
-while loop:
-    user_query = input('Ask your question: ')
-    if user_query != "/bye":
-        response = get_ai_response(qa=qa, query=user_query)
-        print('')
-        print(response)
-        print('')
-    else:
-        loop = False
 
 
-# Example of questions
-
+# Example of questions (based on my documents)
 # Who are Notion’s LLM Providers?
 # What is FN74085?
 
 
 
-# Setup Tkinter GUI
-# root = Tk()
-# root.title('Ask Me')
+####################
+# Simple Text Chat
+####################
 
-# def retrieve_input():
-#     inputValue = textBox.get("1.0", END).strip()
-#     get_ai_response(qa, query=inputValue)
-#     textBox.delete("1.0", END)
-#     Output.insert(END, f"YOU:  {inputValue}\n\n", 'user')
-#     Output.insert(END, f"AI-BOT:  {answer}\n\n", 'bot')
-#     rOutput.insert(END, f"Question: {inputValue} --> {db_query}\n", 'query')
-#     for doc in db_response:
-#         rOutput.insert(END, f"File: {doc.metadata['source']}\nPage: {doc.metadata['page']}\n", 'source')
-#         rOutput.insert(END, f"{doc.page_content[:500]}.......\n", 'content')
+# loop = True
+# while loop:
+#     user_query = input('Ask your question: ')
+#     if user_query != "/bye":
+#         response = get_ai_response(qa=qa, query=user_query)
+#         print('')
+#         print(response)
+#         print('')
+#     else:
+#         loop = False
 
-# # Setup Tkinter GUI elements
-# textBox = Text(root, height=5, width=65, font=('Helvetica', 12), wrap=WORD)
-# textBox.grid(row=1, column=0, padx=10, pady=10)
 
-# buttonCommit = ttk.Button(root, text="Chat", command=retrieve_input)
-# buttonCommit.grid(row=1, column=1, padx=10, pady=10)
 
-# scrollbar = Scrollbar(root)
-# Output = Text(root, height=20, width=65, wrap=WORD, yscrollcommand=scrollbar.set, font=('Helvetica', 12))
-# Output.grid(row=0, column=0, padx=10, pady=10)
-# Output.tag_configure('user', foreground='#3333FF')
-# Output.tag_configure('bot', foreground='#FF5733')
-# scrollbar.grid(row=0, column=1, sticky='ns')
-# scrollbar.config(command=Output.yview)
+####################
+# Simple Tkinter GUI
+####################
+import tkinter as tk
+from tkinter import ttk
 
-# rscrollbar = Scrollbar(root)
-# rOutput = Text(root, height=12, width=65, wrap=WORD, yscrollcommand=rscrollbar.set, font=('Helvetica', 12))
-# rOutput.grid(row=0, column=2, padx=10, pady=10, sticky='ns')
-# rOutput.tag_configure('query', foreground='#3333FF')
-# rOutput.tag_configure('source', foreground='#FF5733')
-# rscrollbar.grid(row=0, column=3, sticky='ns')
-# rscrollbar.config(command=rOutput.yview)
+def retrieve_input():
+    input_value = text_box.get("1.0", tk.END).strip()
+    get_ai_response(qa, query=input_value)
+    text_box.delete("1.0", tk.END)
+    output.insert(tk.END, f"YOU:  {input_value}\n\n", 'user')
+    output.insert(tk.END, f"AI-BOT:  {answer}\n\n", 'bot')
+    r_output.insert(tk.END, f"Question: {input_value} --> {db_query}\n", 'query')
+    for doc in db_response:
+        r_output.insert(tk.END, f"File: {doc.metadata['source']}\nPage: {doc.metadata['page']}\n", 'source')
+        r_output.insert(tk.END, f"{doc.page_content[:500]}.......\n", 'content')
 
-# # Run Tkinter event loop
-# root.mainloop()
+def setup_gui_elements(root):
+    global text_box, output, r_output
+
+    text_box = tk.Text(root, height=5, width=65, font=('Helvetica', 16), wrap=tk.WORD)
+    text_box.grid(row=1, column=0, padx=10, pady=10)
+    text_box.bind("<Return>", on_enter_key)
+
+    button_commit = ttk.Button(root, text="Chat", command=retrieve_input)
+    button_commit.grid(row=1, column=1, padx=10, pady=10)
+
+    scrollbar = tk.Scrollbar(root)
+    output = tk.Text(root, height=20, width=65, wrap=tk.WORD, yscrollcommand=scrollbar.set, font=('Helvetica', 16))
+    output.grid(row=0, column=0, padx=10, pady=10)
+    output.tag_configure('user', foreground='#3333FF')
+    output.tag_configure('bot', foreground='#FF5733')
+    scrollbar.grid(row=0, column=1, sticky='ns')
+    scrollbar.config(command=output.yview)
+
+    r_scrollbar = tk.Scrollbar(root)
+    r_output = tk.Text(root, height=12, width=65, wrap=tk.WORD, yscrollcommand=r_scrollbar.set, font=('Helvetica', 16))
+    r_output.grid(row=0, column=2, padx=10, pady=10, sticky='ns')
+    r_output.tag_configure('query', foreground='#3333FF')
+    r_output.tag_configure('source', foreground='#FF5733')
+    r_scrollbar.grid(row=0, column=3, sticky='ns')
+    r_scrollbar.config(command=r_output.yview)
+
+def on_enter_key(event):
+    retrieve_input()
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.title('Ask Me')
+    setup_gui_elements(root)
+    root.mainloop()
