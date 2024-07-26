@@ -21,7 +21,6 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 # Define language model name and initialize
 llm_name = "gpt-3.5-turbo-0125"
 llm = ChatOpenAI(model_name=llm_name, temperature=0)
-# greeting = llm.invoke("Hi!")
 
 # Define key variables
 persist_directory = 'db'
@@ -50,49 +49,44 @@ def load_db(file, chain_type, k):
     )
     return qa
 
-class Cbfs(param.Parameterized):
-    chat_history = param.List([])
-    answer = param.String("")
-    db_query  = param.String("")
-    db_response = param.List([])
+def call_load_db(loaded_file):
+    return load_db(loaded_file, Chain_type, K)
 
-    def __init__(self,  **params):
-        super(Cbfs, self).__init__( **params)
-        self.panels = []
+def use_existing_db():
+    embeddings2 = OpenAIEmbeddings()
+    exdb = Chroma(persist_directory=persist_directory, embedding_function=embeddings2)
+    exretriever = exdb.as_retriever(search_type="similarity", search_kwargs={"k": K})
+    qa = ConversationalRetrievalChain.from_llm(
+        llm=ChatOpenAI(model_name=llm_name, temperature=0),
+        chain_type=Chain_type,
+        retriever=exretriever,
+        return_source_documents=True,
+        return_generated_question=True,
+        verbose=True)
+    return qa
 
-    def call_load_db(self, loaded_file):
-        self.loaded_file = loaded_file
-        self.qa = load_db(self.loaded_file, Chain_type, K)
+chat_history = []
+answer = ""
+db_query = ""
+db_response = []
 
-    def use_existing_db(self):
-        embeddings2 = OpenAIEmbeddings()
-        exdb = Chroma(persist_directory=persist_directory, embedding_function=embeddings2)
-        exretriever = exdb.as_retriever(search_type="similarity", search_kwargs={"k": K})
-        self.qa = ConversationalRetrievalChain.from_llm(
-            llm=ChatOpenAI(model_name=llm_name, temperature=0),
-            chain_type=Chain_type,
-            retriever=exretriever,
-            return_source_documents=True,
-            return_generated_question=True,
-            verbose=True)
+def convchain(qa, query):
+    global chat_history, answer, db_query, db_response
+    result = qa({"question": query, "chat_history": chat_history})
+    chat_history.extend([(query, result["answer"])])
+    db_query = result["generated_question"]
+    db_response = result["source_documents"]
+    answer = result['answer']
 
-    def convchain(self, query):
-        result = self.qa({"question": query, "chat_history": self.chat_history})
-        self.chat_history.extend([(query, result["answer"])])
-        self.db_query = result["generated_question"]
-        self.db_response = result["source_documents"]
-        self.answer = result['answer']
-
-cb = Cbfs()
-
+qa = None
 print(db_flag)
 if db_flag == 0:
     loaded_file = "docs"
     print('embed documents and save to database: '+loaded_file)
-    cb.call_load_db(loaded_file)
+    qa = call_load_db(loaded_file)
 else:
     print('use existing_db')
-    cb.use_existing_db()
+    qa = use_existing_db()
 
 # Setup Tkinter GUI
 root = Tk()
@@ -100,12 +94,12 @@ root.title('Ask Me')
 
 def retrieve_input():
     inputValue = textBox.get("1.0", END).strip()
-    cb.convchain(query=inputValue)
+    convchain(qa, query=inputValue)
     textBox.delete("1.0", END)
     Output.insert(END, f"YOU:  {inputValue}\n\n", 'user')
-    Output.insert(END, f"AI-BOT:  {cb.answer}\n\n", 'bot')
-    rOutput.insert(END, f"Question: {inputValue} --> {cb.db_query}\n", 'query')
-    for doc in cb.db_response:
+    Output.insert(END, f"AI-BOT:  {answer}\n\n", 'bot')
+    rOutput.insert(END, f"Question: {inputValue} --> {db_query}\n", 'query')
+    for doc in db_response:
         rOutput.insert(END, f"File: {doc.metadata['source']}\nPage: {doc.metadata['page']}\n", 'source')
         rOutput.insert(END, f"{doc.page_content[:500]}.......\n", 'content')
 
@@ -134,4 +128,3 @@ rscrollbar.config(command=rOutput.yview)
 
 # Run Tkinter event loop
 root.mainloop()
-
