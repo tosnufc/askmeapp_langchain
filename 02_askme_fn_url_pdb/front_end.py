@@ -9,20 +9,12 @@ with st.sidebar:
     st.header("Settings")
     fn_url = st.text_input("Field Notice URL")
     embed_button = st.button("Embed")
-# if fn_url is None or fn_url == "":
-#     st.info("Please enter a website URL")
-# else:
-# if "session_messages" not in st.session_state:
-#     st.session_state.session_message = [
-#     SystemMessage(content="You are a Cisco Field Notice expert acting as an assistant. You can't answer anything that is not related to Cisco Field Notice")
-#     ]
+
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = [
     AIMessage(content="Hello, I'm your FN bot. How can I help you?"),
     ]
-# if "vector_store" not in st.session_state:
 if embed_button:
-    # st.session_state.vector_store = embed_url(fn_url)
     embed_url(fn_url)
 
 user_query = st.chat_input("Type your message here...")
@@ -39,7 +31,4 @@ for message in st.session_state.chat_history:
         with st.chat_message("Human"):
             st.write(message.content)
 
-# for n in st.session_state.chat_history:
-#     print(n)
-
-print(st.session_state)
+print(st.session_state.chat_history)

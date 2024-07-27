@@ -21,10 +21,8 @@ def embed_url(url):
     document = loader.load()
     text_splitter = RecursiveCharacterTextSplitter()
     document_chunks = text_splitter.split_documents(document)
-    # vector_store = Chroma.from_documents(document_chunks, OpenAIEmbeddings(), persist_directory='./db/')
     Chroma.from_documents(document_chunks, OpenAIEmbeddings(), persist_directory='./db/')
-    # vector_store.persist()
-    # return vector_store
+
 
 def retrieve():
     vector_store = Chroma(persist_directory='./db/', embedding_function=OpenAIEmbeddings())
@@ -54,7 +52,6 @@ def get_response(user_query):
     retriever_chain = retrieve()
     conversation_chain = get_conversation(retriever_chain=retriever_chain)
     response = conversation_chain.invoke({
-        # "session_message" : st.session_state.session_message,
         "chat_history": st.session_state.chat_history,
         "input": user_query
     })
