@@ -19,7 +19,7 @@ chunk_size = 1000
 chunk_overlap = 150
 
 # define additional variables for get_standalone_question
-llm_model = 'gpt-4o'
+llm_model = 'gpt-3.5-turbo-0125'
 temperature = 0
 chain_type = 'stuff'
 k = 2
@@ -44,7 +44,7 @@ def embed(data_source):
 
 # embed(dir=pdf_dir)
 
-def get_standalone_question():
+def get_retriever_chain():
     '''retrieve from the vector store with user's query to create a standalone question'''
     vector_store = Chroma(persist_directory=persist_dir, embedding_function=OpenAIEmbeddings())
     llm = ChatOpenAI(model=llm_model, 
@@ -57,7 +57,7 @@ def get_standalone_question():
         chain_type=chain_type,
         return_source_documents=True,
         return_generated_question=True,
-        verbose=True
+        # verbose=True
     )
     return retriever_chain
 
@@ -75,11 +75,15 @@ def get_ai_response(qa, query):
     answer = result['answer']
     return answer
 
-qa = get_standalone_question()
+qa = get_retriever_chain()
+
+### Example codes for debug ###
+# print(qa({"question": 'what is FN74085', "chat_history": chat_history})['generated_question'])
+# print(get_ai_response(qa=qa, query='what is FN74085?'))
 
 
 
-# Example of questions (based on my documents)
+### Example of questions (based on my documents) ###
 # Who are Notion’s LLM Providers?
 # What is FN74085?
 
@@ -102,9 +106,9 @@ qa = get_standalone_question()
 
 
 
-####################
+# ###################
 # Simple Tkinter GUI
-####################
+# ###################
 import tkinter as tk
 from tkinter import ttk
 
