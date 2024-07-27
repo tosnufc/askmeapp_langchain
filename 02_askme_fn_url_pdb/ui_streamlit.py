@@ -1,7 +1,7 @@
 # front_end.py
 import streamlit as st
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from back_end import embed_url, get_response
+from askme_fn_url import embed_url, get_response
 
 st.set_page_config(page_title="Ask Me Field Notices", page_icon="🤖")
 st.title("Ask Me Field Notices")

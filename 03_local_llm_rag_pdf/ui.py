@@ -2,7 +2,7 @@ import os
 import tempfile
 import streamlit as st
 from streamlit_chat import message
-from askmeapp_ollama import AskMe
+from local_llm_rag_app import AskMe
 
 st.set_page_config(page_title="Ask Me")
 

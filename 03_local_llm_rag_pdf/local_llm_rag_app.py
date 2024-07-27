@@ -8,9 +8,11 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 
-chunk_size = 1024
-chunk_overlap = 100
+chunk_size = 1000
+chunk_overlap = 200
 llm_model = "llama3" # llama3, mistral, gemma2
+k = 3
+score = 0.7
 
 class AskMe:
     vector_store = None
@@ -47,8 +49,8 @@ class AskMe:
         self.retriever = vector_store.as_retriever(
             search_type="similarity_score_threshold",
             search_kwargs={
-                "k":3,
-                "score_threshold":0.5,
+                "k":k,
+                "score_threshold":score,
             },
         )
 
@@ -56,7 +58,7 @@ class AskMe:
                       | self.prompt
                       | self.model
                       | StrOutputParser()
-                      )
+                     )
 
     def ask(self, query: str):
         if not self.chain:
