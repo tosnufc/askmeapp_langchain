@@ -10,7 +10,7 @@ from langchain_core.runnables import RunnablePassthrough
 
 chunk_size = 1000
 chunk_overlap = 200
-llm_model = "llama3" # llama3, mistral, gemma2
+llm_model = "llama3.1" # llama3.1, mistral, gemma2
 k = 3
 score = 0.7
 
