@@ -2,6 +2,7 @@ from langchain_community.document_loaders import YoutubeLoader
 from langchain.prompts import PromptTemplate
 from langchain_community.chat_models import ChatOllama
 from langchain_openai import ChatOpenAI
+from openai import OpenAI
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -30,10 +31,22 @@ while loop:
             template=prompt_template,
         )
 
-        llm = ChatOllama(model='llama3.1', temperature=0)
-        # llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        # llm = ChatOllama(model='llama3.1', temperature=0)
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
         # llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
         chain = prompt | llm
         response = chain.invoke({'video_transcript':transcript}).content
         print(f"\n\nSummary: {response}\n\n")
+
+        client = OpenAI()
+        speech_file_path = './sum.mp3'
+        with client.audio.speech.with_streaming_response.create(
+            model="tts-1",
+            voice="echo", # alloy, echo, fable, onyx, nova, shimmer
+            input=response,
+            response_format='mp3',
+            speed=1.2,
+        ) as response:
+            response.stream_to_file(speech_file_path)
+        print(f"sum.mp3...")
