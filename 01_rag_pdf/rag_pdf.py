@@ -42,7 +42,7 @@ def embed(data_source):
                                 embedding=embeddings,
                                 persist_directory=persist_dir)
 
-# embed(dir=pdf_dir)
+# embed(data_source=pdf_dir)
 
 def get_retriever_chain():
     '''retrieve from the vector store with user's query to create a standalone question'''
