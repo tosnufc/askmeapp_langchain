@@ -32,8 +32,8 @@ while loop:
         )
 
         # llm = ChatOllama(model='llama3.1', temperature=0)
-        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-        # llm = ChatOpenAI(model="gpt-4o", temperature=0)
+        # llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+        llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
         chain = prompt | llm
         response = chain.invoke({'video_transcript':transcript}).content
@@ -43,7 +43,7 @@ while loop:
         speech_file_path = './sum.mp3'
         with client.audio.speech.with_streaming_response.create(
             model="tts-1",
-            voice="echo", # alloy, echo, fable, onyx, nova, shimmer
+            voice="nova", # alloy, echo, fable, onyx, nova, shimmer
             input=response,
             response_format='mp3',
             speed=1.2,
